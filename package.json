@@ -11,7 +11,7 @@
     "start": "fastify start -l info app.js",
     "dev": "fastify start -w -l info -P app.js",
     "lint": "eslint '**/*.js'",
-    "lint:fix": "eslint --fix",
+    "lint:fix": "eslint '**/*.js' --fix",
     "prettier": "prettier --single-quote --write '**/*.js'"
   },
   "keywords": [],
