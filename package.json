@@ -1,0 +1,46 @@
+{
+  "name": "lapuerta",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "tap test/**/*.test.js",
+    "start": "fastify start -l info app.js",
+    "dev": "fastify start -w -l info -P app.js",
+    "lint": "eslint '**/*.js'",
+    "lint:fix": "eslint --fix",
+    "prettier": "prettier --single-quote --write '**/*.js'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^2.0.0",
+    "fastify-autoload": "^1.0.0",
+    "fastify-cli": "^1.5.0",
+    "fastify-env": "^1.0.1",
+    "fastify-plugin": "^1.5.0",
+    "fastify-swagger": "^2.5.0",
+    "knex": "^0.20.13",
+    "pg": "^7.18.2"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "lint-staged": "^10.0.10",
+    "prettier": "^2.0.2",
+    "tap": "^12.5.3"
+  },
+  "gitHooks": {
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --single-quote --write",
+      "eslint --fix",
+      "git add"
+    ]
+  }
+}
