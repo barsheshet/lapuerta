@@ -24,11 +24,7 @@ module.exports = fp(async function (fastify) {
     debug: config.DB_DEBUG,
   });
 
-  try {
-
-
-
-    
+  try {    
     await knex.raw('SELECT 1+1');
   } catch (e) {
     fastify.log.error('Database connection failed!');
