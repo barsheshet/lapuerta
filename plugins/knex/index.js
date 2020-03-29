@@ -12,23 +12,19 @@ module.exports = fp(async function (fastify) {
       port: config.DB_PORT,
       user: config.DB_USER,
       password: config.DB_PASSWORD,
-      database: config.DB_NAME
+      database: config.DB_NAME,
     },
     useNullAsDefault: true,
     migrations: {
-      directory: './plugins/knex/migrations'
+      directory: './plugins/knex/migrations',
     },
     seeds: {
-      directory: './plugins/knex/seeds'
+      directory: './plugins/knex/seeds',
     },
     debug: config.DB_DEBUG,
   });
 
   try {
-    
-    
-
-    
     await knex.raw('SELECT 1+1');
   } catch (e) {
     fastify.log.error('Database connection failed!');
