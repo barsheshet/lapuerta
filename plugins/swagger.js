@@ -1,7 +1,8 @@
 const swagger = require('fastify-swagger');
 
-module.exports = function (fastify, opts, next) {
+module.exports = async function (fastify) {
   const swaggerOptions = {
+    routePrefix: '/documentation',
     exposeRoute: true,
     swagger: {
       info: {
@@ -17,6 +18,4 @@ module.exports = function (fastify, opts, next) {
   };
 
   fastify.register(swagger, swaggerOptions);
-
-  next();
 };

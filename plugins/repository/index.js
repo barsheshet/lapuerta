@@ -1,7 +1,6 @@
-'use strict';
-
 const fp = require('fastify-plugin');
 const Knex = require('knex');
+const UserRepository = require('./user/user.repository');
 
 module.exports = fp(async function (fastify) {
   const config = fastify.config;
@@ -16,10 +15,10 @@ module.exports = fp(async function (fastify) {
     },
     useNullAsDefault: true,
     migrations: {
-      directory: './plugins/knex/migrations',
+      directory: './plugins/repository/migrations',
     },
     seeds: {
-      directory: './plugins/knex/seeds',
+      directory: './plugins/repository/seeds',
     },
     debug: config.DB_DEBUG,
   });
@@ -32,5 +31,19 @@ module.exports = fp(async function (fastify) {
     process.exit(1);
   }
 
-  fastify.decorate('knex', knex);
+  try {
+    fastify.log.info('Knex migration is running...');
+    await knex.migrate.latest();
+    fastify.log.info('Knex migration complete.');
+  } catch (e) {
+    fastify.log.error(e);
+    process.exit(1);
+  }
+  const User = fastify.entity.User;
+  const { UniqueError } = fastify;
+  const repository = {
+    user: new UserRepository({ knex, User, UniqueError }),
+  };
+
+  fastify.decorate('repository', repository);
 });

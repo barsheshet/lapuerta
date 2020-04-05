@@ -1,17 +1,27 @@
-'use strict';
+const status = require('http-status');
 
-module.exports = function (fastify, opts, next) {
-  fastify.get('/', function (request, reply) {
-    reply.send({ root: true });
+module.exports = async function (fastify) {
+  fastify.route({
+    url: '/',
+    method: 'GET',
+    schema: {
+      description: 'Returns 200 OK if the service is up and running',
+      summary: 'Health Check',
+      tags: ['general'],
+      response: {
+        [status.OK]: {
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              example: status[status.OK],
+            },
+          },
+        },
+      },
+    },
+    handler: async function () {
+      return { status: status[status.OK] };
+    },
   });
-
-  next();
 };
-
-// If you prefer async/await, use the following
-//
-// module.exports = async function (fastify, opts) {
-//   fastify.get('/', async function (request, reply) {
-//     return { root: true }
-//   })
-// }
