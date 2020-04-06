@@ -2,13 +2,8 @@ const fp = require('fastify-plugin');
 const User = require('./user');
 
 module.exports = fp(async function (fastify) {
-  const { ValidationError, OperationError } = fastify;
-
   const entities = {
-    User: User({
-      ValidationError,
-      OperationError,
-    }),
+    User,
   };
 
   fastify.decorate('entity', entities);

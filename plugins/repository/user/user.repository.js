@@ -1,10 +1,12 @@
+const makeError = require('make-error');
 const UserMapper = require('./user.mapper');
 
+const UniqueError = makeError('UniqueError');
+
 module.exports = class UserRepository {
-  constructor({ knex, User, UniqueError }) {
+  constructor({ knex, User }) {
     this.knex = knex;
     this.mapper = UserMapper(User);
-    this.UniqueError = UniqueError;
   }
 
   async create(user) {
@@ -13,7 +15,7 @@ module.exports = class UserRepository {
       await this.knex('users').insert(data);
     } catch (e) {
       if (e.code === '23505') {
-        throw new this.UniqueError(e.detail);
+        throw new UniqueError(e.detail);
       } else {
         throw e;
       }

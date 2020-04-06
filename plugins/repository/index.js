@@ -40,9 +40,9 @@ module.exports = fp(async function (fastify) {
     process.exit(1);
   }
   const User = fastify.entity.User;
-  const { UniqueError } = fastify;
+
   const repository = {
-    user: new UserRepository({ knex, User, UniqueError }),
+    user: new UserRepository({ knex, User }),
   };
 
   fastify.decorate('repository', repository);

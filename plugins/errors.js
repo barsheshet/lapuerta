@@ -1,23 +1,15 @@
 const fp = require('fastify-plugin');
 
 module.exports = fp(async function (fastify) {
-  class ValidationError extends Error {}
-  class OperationError extends Error {}
-  class UniqueError extends Error {}
-
-  fastify.decorate('ValidationError', ValidationError);
-  fastify.decorate('OperationError', OperationError);
-  fastify.decorate('UniqueError', UniqueError);
-
-  fastify.decorate('handleError', function (e) {
-    if (e instanceof ValidationError) {
-      return fastify.httpErrors.badRequest(e.message);
+  fastify.decorate('handleError', async function (e) {
+    if (e.name === 'ValidationError') {
+      throw fastify.httpErrors.badRequest(e.message);
     }
-    if (e instanceof OperationError) {
-      return fastify.httpErrors.badRequest(e.message);
+    if (e.name === 'OperationError') {
+      throw fastify.httpErrors.badRequest(e.message);
     }
-    if (e instanceof UniqueError) {
-      return fastify.httpErrors.conflict('entity already exists');
+    if (e.name === 'UniqueError') {
+      throw fastify.httpErrors.conflict(e.message);
     }
     throw e;
   });

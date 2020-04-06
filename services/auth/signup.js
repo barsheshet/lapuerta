@@ -44,26 +44,26 @@ module.exports = async function (fastify) {
       },
     },
     handler: async function (req) {
+      const User = fastify.entity.User;
+      const repository = fastify.repository.user;
+
+      const user = new User();
+
       try {
-        const User = fastify.entity.User;
-        const repository = fastify.repository.user;
-
-        const user = new User();
-
         user.setEmail(req.body.email);
         await user.setPassword(req.body.password);
 
         await repository.create(user);
+
+        return {
+          status: httpStatus[httpStatus.CREATED],
+          data: {
+            idToken: 'abcd',
+          },
+        };
       } catch (e) {
         return fastify.handleError(e);
       }
-
-      return {
-        status: httpStatus[httpStatus.CREATED],
-        data: {
-          idToken: 'abcd',
-        },
-      };
     },
   });
 };
