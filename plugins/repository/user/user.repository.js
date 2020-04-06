@@ -1,7 +1,4 @@
-const makeError = require('make-error');
 const UserMapper = require('./user.mapper');
-
-const UniqueError = makeError('UniqueError');
 
 module.exports = class UserRepository {
   constructor({ knex, User }) {
@@ -12,25 +9,52 @@ module.exports = class UserRepository {
   async create(user) {
     const data = this.mapper.toDatabase(user);
     try {
-      await this.knex('users').insert(data);
+      const created = await this.knex('users').returning().insert(data);
+      return this.mapper.toEntity(created);
     } catch (e) {
       if (e.code === '23505') {
-        throw new UniqueError(e.detail);
+        return null;
       } else {
         throw e;
       }
     }
   }
 
-  update(user) {
+  async findOne({ id, email }) {
+    let where = {};
+    if (id) {
+      where.id = id;
+    }
+    if (email) {
+      where.email = email;
+    }
+    const user = await this.knex('users').first().where(where);
+    if (!user) {
+      return null;
+    }
+    return this.mapper.toEntity(user);
+  }
+
+  async update(user) {
     const data = this.mapper.toDatabase(user);
     const id = data.id;
     delete data.id;
-    return this.knex('users').update(data).where({ id });
+    const updated = await this.knex('users')
+      .update(data)
+      .returning()
+      .where({ id });
+    if (!updated[0]) {
+      return null;
+    }
+    return this.mapper.toEntity(updated[0]);
   }
 
-  delete(user) {
-    const data = this.mapper.toDatabase(user);
-    return this.knex('users').delete().where({ id: data.id });
+  async delete(user) {
+    const { id } = this.mapper.toDatabase(user);
+    const deleted = await this.knex('users').delete().returning().where({ id });
+    if (!deleted[0]) {
+      return null;
+    }
+    return this.mapper.toEntity(deleted[0]);
   }
 };

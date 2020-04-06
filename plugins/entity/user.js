@@ -4,10 +4,6 @@ const bcrypt = require('bcrypt');
 const randomNumber = require('random-number-csprng');
 const owaspPasswordStrength = require('owasp-password-strength-test');
 const { normalizeEmail, isEmail, isMobilePhone } = require('validator');
-const makeError = require('make-error');
-
-const ValidationError = makeError('ValidationError');
-const OperationError = makeError('OperationError');
 
 module.exports = class User {
   constructor(data = {}) {
@@ -99,49 +95,56 @@ module.exports = class User {
   setEmail(email) {
     let normalized = normalizeEmail(email);
     if (!isEmail(normalized)) {
-      throw new ValidationError('invalid email');
+      throw new Error('Invalid email');
     }
     this._email = normalized;
+    return this;
   }
 
   setMobile(mobile) {
     if (!isMobilePhone(mobile, null, { strictMode: true })) {
-      throw new ValidationError('invalid mobile');
+      throw new Error('Invalid mobile');
     }
     this._mobile = mobile;
+    return this;
   }
 
   async setPassword(password) {
     const strength = owaspPasswordStrength.test(password);
     if (!strength.strong) {
-      throw new ValidationError(strength.errors[0]);
+      throw new Error(strength.errors[0]);
     }
     this._password = await bcrypt.hash(password, 10);
+    return this;
   }
 
   setInfo(info) {
     this._info = JSON.parse(JSON.stringify(info));
+    return this;
   }
 
   setIsSmsTwoFa(value) {
     const isSmsTwoFa = !!value;
     if (isSmsTwoFa && !this.mobile) {
-      throw new OperationError('cannot set sms 2FA without mobile phone');
+      throw new Error('Cannot set sms 2FA without mobile phone');
     }
     this._isSmsTwoFa = isSmsTwoFa;
+    return this;
   }
 
   addRole(role) {
     if (!Object.values(User.roles).includes(role)) {
-      throw new ValidationError('invalid role');
+      throw new Error('Invalid role');
     }
     if (!this._roles.includes(role)) {
       this._roles.push(role);
     }
+    return this;
   }
 
   removeRole(role) {
     this._roles = this._roles.filter((item) => item === role);
+    return this;
   }
 
   generateEmailVerificationToken(expirationInMinutes) {
@@ -149,7 +152,7 @@ module.exports = class User {
     this._emailVerificationExpires = moment()
       .utc()
       .add(expirationInMinutes, 'minutes');
-    return this._emailVerificationToken;
+    return this;
   }
 
   verifyEmail(token) {
@@ -158,8 +161,9 @@ module.exports = class User {
       this._emailVerificationToken !== token ||
       this._emailVerificationExpires.isBefore(moment().utc())
     ) {
-      throw new OperationError('email verification failed');
+      throw new Error('Email verification failed');
     }
+    return this;
   }
 
   async generateMobileVerificationCode(expirationInMinutes) {
@@ -170,7 +174,7 @@ module.exports = class User {
     this._mobileVerificationExpires = moment()
       .utc()
       .add(expirationInMinutes, 'minutes');
-    return this._mobileVerificationCode;
+    return this;
   }
 
   verifyMobile(code) {
@@ -179,8 +183,9 @@ module.exports = class User {
       this._mobileVerificationCode !== code ||
       this._mobileVerificationExpires.isBefore(moment().utc())
     ) {
-      throw new OperationError('mobile verification falied');
+      throw new Error('Mobile verification falied');
     }
+    return this;
   }
 
   generateResetPasswordToken(expirationInMinutes) {
@@ -197,9 +202,18 @@ module.exports = class User {
       this._resetPasswordToken !== token ||
       this._resetPasswordExpires.isBefore(moment().utc())
     ) {
-      throw new OperationError('reset password falied');
+      throw new Error('Reset password falied');
     }
     this.setPassword(newPassword);
+    return this;
+  }
+
+  async checkPassword(password) {
+    const isValid = await bcrypt.compare(password, this.password);
+    if (!isValid) {
+      throw new Error('Wrong password');
+    }
+    return this;
   }
 
   static get roles() {
@@ -212,8 +226,6 @@ module.exports = class User {
   static get providers() {
     return {
       LOCAL: 'local',
-      // FACEBOOK: 'facebook',
-      // GOOGLE: 'google'
     };
   }
 

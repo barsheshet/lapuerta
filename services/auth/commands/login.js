@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 
 module.exports = async function (fastify) {
   fastify.route({
-    url: '/signup',
+    url: '/login',
     method: 'POST',
     schema: {
       tags: ['Auth'],
@@ -23,12 +23,12 @@ module.exports = async function (fastify) {
         },
       },
       response: {
-        [httpStatus.CREATED]: {
+        [httpStatus.OK]: {
           type: 'object',
           properties: {
             status: {
               type: 'string',
-              example: httpStatus[httpStatus.CREATED],
+              example: httpStatus[httpStatus.OK],
             },
             data: {
               type: 'object',
@@ -44,26 +44,26 @@ module.exports = async function (fastify) {
       },
     },
     handler: async function (req) {
-      const User = fastify.entity.User;
-      const repository = fastify.repository.user;
+      const userRepository = fastify.repository.user;
 
-      const user = new User();
+      let user = await userRepository.findOne({ email: req.body.email });
+
+      if (!user) {
+        return fastify.httpErrors.unauthorized('Wrong email or password');
+      }
 
       try {
-        user.setEmail(req.body.email);
-        await user.setPassword(req.body.password);
-
-        await repository.create(user);
-
-        return {
-          status: httpStatus[httpStatus.CREATED],
-          data: {
-            idToken: 'abcd',
-          },
-        };
+        user = await user.checkPassword(req.body.password);
       } catch (e) {
-        return fastify.handleError(e);
+        return fastify.httpErrors.unauthorized('Wrong email or password');
       }
+
+      return {
+        status: httpStatus[httpStatus.OK],
+        data: {
+          idToken: 'abcd',
+        },
+      };
     },
   });
 };
