@@ -20,7 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^4.0.1",
-    "fastify": "^2.0.0",
+    "fastify": "^2.15.1",
     "fastify-autoload": "^1.0.0",
     "fastify-cli": "^1.5.0",
     "fastify-compress": "^2.0.1",
